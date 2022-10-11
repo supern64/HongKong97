@@ -5,7 +5,7 @@ module.exports = {
   entry: './src/index.ts',
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Hong Kong 97',
+      template: "src/index.html"
     }),
   ],
   module: {

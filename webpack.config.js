@@ -38,6 +38,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
+    publicPath: '/HongKong97/',
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
     clean: true

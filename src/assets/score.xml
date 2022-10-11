@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<font>
+    <info face="score" size="16" />
+    <common lineHeight="16" />
+    <pages>
+        <page id="0" file="score.png" />
+    </pages>    
+    <chars>
+        <char id="48" x="0" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="49" x="16" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="50" x="32" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="51" x="48" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="52" x="64" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="53" x="80" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="54" x="96" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="55" x="112" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="56" x="128" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0" />
+        <char id="57" x="144" y="0" width="16" height="16" xadvance="16" xoffset="0" yoffset="0"/>
+    </chars>
+</font>

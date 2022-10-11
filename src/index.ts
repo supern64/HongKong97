@@ -12,6 +12,7 @@ import ScoreLocation from './assets/score.png';
 export const app = new PIXI.Application();
 const registeredEffects: Array<{ name: string; effect: Effect }> = [];
 let currentStage: Scene | null;
+app.view.id = "canvas";
 document.body.appendChild(app.view);
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;

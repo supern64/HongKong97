@@ -6,6 +6,7 @@ import FadeContinuous from '../effects/fadeContinuous';
 import FadeOut from '../effects/fadeOut';
 import Scene from './scene';
 import Intro from './intro';
+import Game from './game';
 
 
 class Warning implements Scene {
@@ -53,14 +54,12 @@ class Warning implements Scene {
                 setCurrentScene(new Intro(false));  
             }));
         }
-        /*
-        if (event.code === "KeyG" && this.isLoadingComplete) {
+        if (event.code === "KeyG" && this.isLoadingComplete && process.env.NODE_ENV === "development") {
             removeEffect("warning-continueTextFade");
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
                 setCurrentScene(new Game());
             }));
         }
-        */
     }
 
     cleanup(app: PIXI.Application): void {

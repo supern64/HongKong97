@@ -1,5 +1,5 @@
 import { Assets } from "@pixi/assets";
-import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite, utils } from "pixi.js";
+import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite, utils, Graphics } from "pixi.js";
 import { app, PRESSED_KEYS, registerEffect, removeEffect, setCurrentScene } from "..";
 import * as BackgroundSheetData from "../assets/bg.json";
 import * as PlayerSheetData from "../assets/player.json";
@@ -28,6 +28,7 @@ class Game implements Scene {
 
     private scoreText: BitmapText;
     private player: AnimatedSprite;
+    private boundingBoxDisplay: Graphics;
     private playerSpriteSheet: Spritesheet;
     private enemySpriteSheet: Spritesheet;
     private effectSpriteSheet: Spritesheet;
@@ -83,6 +84,14 @@ class Game implements Scene {
                 this.player.scale.x = 2.3;
                 this.player.scale.y = 2.3;
 
+                if (process.env.NODE_ENV === "development") {
+                    this.boundingBoxDisplay = new Graphics();
+                    let bb = this.player.getBounds();
+                    this.boundingBoxDisplay.zIndex = 3;
+                    this.boundingBoxDisplay.renderable = false;
+                    this.container.addChild(this.boundingBoxDisplay);
+                }
+
                 this.container.addChild(this.player);
             });
 
@@ -105,12 +114,25 @@ class Game implements Scene {
 
             registerEffect("game-fadeIn", new FadeIn(this.container));
         });
+        
         app.stage.addChild(this.container);
     }
     updateAndDraw(app: Application, delta: number): void {
         if (this.isPlayerDead) return;
         // update score ui
         if (this.scoreText) this.scoreText.text = this.score.toString().padStart(9, '0');
+
+        if (this.boundingBoxDisplay && process.env.NODE_ENV === "development") {
+            this.boundingBoxDisplay.renderable = PRESSED_KEYS["ShiftLeft"] ? true : false
+            if (PRESSED_KEYS["ShiftLeft"]) {
+                let bb = this.player.getBounds();
+                this.boundingBoxDisplay.clear();
+                this.boundingBoxDisplay.lineStyle(2, 0xFF0000);
+                this.boundingBoxDisplay.drawRect(0, 0, bb.width, bb.height);
+                this.boundingBoxDisplay.x = bb.x;
+                this.boundingBoxDisplay.y = bb.y;
+            }
+        }
 
         // inputs
         if (PRESSED_KEYS["ArrowRight"]) {
@@ -229,6 +251,8 @@ class Game implements Scene {
             }
         }
 
+        
+        
         this.lastFrameInputs = PRESSED_KEYS;
         this.lastUpdate += delta;
     }

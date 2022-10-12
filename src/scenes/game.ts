@@ -1,25 +1,31 @@
 import { Assets } from "@pixi/assets";
 import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite } from "pixi.js";
-import { app, PRESSED_KEYS, registerEffect, setCurrentScene } from "..";
+import { app, PRESSED_KEYS, registerEffect, removeEffect, setCurrentScene } from "..";
 import * as BackgroundSheetData from "../assets/bg.json";
 import * as PlayerSheetData from "../assets/player.json";
 import * as EnemySheetData from "../assets/eneitems.json";
 import * as EffectSheetData from "../assets/effects.json";
 import FadeIn from "../effects/fadeIn";
-import Bullet from "./entity/bullet";
+import Bullet from "./entity/bulletPlayer";
 import Entity from "./entity/entity";
 import Scene from "./scene";
-import BasicEnemyGuy from "./entity/basicEnemyGuy";
+import BasicEnemy from "./entity/basicEnemyGuy";
+import Car from "./entity/car";
 import FadeOut from "../effects/fadeOut";
 import Intro from "./intro";
+import Needle from "./entity/needle";
+import QuickFlash from "../effects/quickFlash";
+import Enemy from "./entity/enemy";
 
 
 class Game implements Scene {
     private container: Container;
 
-    public score: number = 0;
-    private isInvincible = false;
+    public score = 0;
+    public enemiesDefeated = 0;
+    private invincibleFramesLeft = 0;
     private isPlayerDead = false;
+
     private scoreText: BitmapText;
     private player: AnimatedSprite;
     private playerSpriteSheet: Spritesheet;
@@ -27,7 +33,11 @@ class Game implements Scene {
     private effectSpriteSheet: Spritesheet;
 
     private lastUpdate = 0;
-    private lastEnemySpawn = 0;
+    private lastZPress = 0;
+    private lastAutoShoot = 0;
+    private lastNormalEnemySpawn = 0;
+    private lastCarSpawn = 0;
+    private lastFrameInputs: { [key: string]: boolean } = {};
 
     readonly entities: Entity[] = [];
 
@@ -100,6 +110,7 @@ class Game implements Scene {
         if (this.isPlayerDead) return;
         // update score ui
         if (this.scoreText) this.scoreText.text = this.score.toString().padStart(9, '0');
+
         // inputs
         if (PRESSED_KEYS["ArrowRight"]) {
             if (this.player.x + 7 * delta + this.player.width > app.view.width) {
@@ -129,6 +140,30 @@ class Game implements Scene {
                 this.player.y += 7 * delta;
             }
         }
+        if (PRESSED_KEYS["KeyZ"] && this.lastFrameInputs?.["KeyZ"] && (this.lastUpdate - this.lastZPress > 8 && this.lastUpdate - this.lastAutoShoot > 8)) {
+            this.spawnEntity(new Bullet(this, this.player.x + this.player.width / 2, this.player.y));
+            this.lastAutoShoot = this.lastUpdate;
+        }
+
+        // animation fixes
+        if ((PRESSED_KEYS["ArrowLeft"] && PRESSED_KEYS["ArrowRight"]) || (PRESSED_KEYS["ArrowUp"] && PRESSED_KEYS["ArrowDown"])) {
+            this.player.gotoAndStop(0);
+        } else if (!this.player?.playing) {
+            if (PRESSED_KEYS["ArrowUp"] && !PRESSED_KEYS["ArrowRight"] && !PRESSED_KEYS["ArrowLeft"]) {
+                this.player.gotoAndStop(1);
+            }
+            if (PRESSED_KEYS["ArrowRight"]) {
+                this.player.scale.x = -Math.abs(this.player.scale.x);
+                this.player.anchor.x = 1;
+                this.player.gotoAndPlay(2);
+            }
+            if (PRESSED_KEYS["ArrowLeft"]) {
+                this.player.scale.x = Math.abs(this.player.scale.x);
+                this.player.anchor.x = 0;
+                this.player.gotoAndPlay(2);
+            }
+        }
+
         // process entities
         for (let i = 0; i < this.entities.length; i++) {
             if (!this.entities[i].getIsActive()) {
@@ -137,32 +172,63 @@ class Game implements Scene {
                 this.entities[i].update(delta);
             }
         }
+
         // player collision (cause fuck you im not doing player in a separate file)
-        for (let enemy of this.entities.filter(r => r instanceof BasicEnemyGuy)) {
-            if (this.player.getBounds().intersects((enemy as BasicEnemyGuy).sprite.getBounds())) {
-                if (!(enemy as BasicEnemyGuy).getIsDead()) {
-                    if (this.isInvincible) {
-                        (enemy as BasicEnemyGuy).signalHit();
-                        this.score += 12;
-                    } else {
-                        this.isPlayerDead = true;
-                        (enemy as BasicEnemyGuy).setDead();
-                        registerEffect("game-fadeout", new FadeOut(this.container, 1, () => {
+        // prioritize invincibility items over enemies (because i'm nice)
+        const needles = this.entities.filter(r => r instanceof Needle);
+        if (needles.length > 0) {
+            for (let needle of needles) {
+                if (this.player.getBounds().intersects((needle as Needle).sprite.getBounds()) && !(needle as Needle).getHasBeenUsed()) {
+                    this.invincibleFramesLeft = 500;
+                    (needle as Needle).use();
+                    registerEffect("playerInvincibilityFlash", new QuickFlash(this.player))
+                }
+            }
+        }
+
+        if (this.invincibleFramesLeft != 500) {
+            for (let enemy of this.entities.filter(r => r instanceof Enemy)) {
+                if (this.player.getBounds().intersects((enemy as Enemy).sprite.getBounds())) {
+                    if (!(enemy as Enemy).getIsDead()) {
+                        if (this.invincibleFramesLeft > 0) {
+                            (enemy as Enemy).hit();
+                            this.score += 12;
+                            this.enemiesDefeated += 1;
+                        } else {
+                            this.isPlayerDead = true;
+                            (enemy as Enemy).setDead();
                             this.player.gotoAndStop(0);
-                            setCurrentScene(new Intro(true));
-                        }))
+                            registerEffect("game-fadeout", new FadeOut(this.container, 1, () => {
+                                setCurrentScene(new Intro(true));
+                            }))
+                        }
                     }
                 }
-                
             }
         }
-        // now spawn more of em
-        if (this.lastUpdate - this.lastEnemySpawn > 15) {
-            if (Math.random() > 0.6) {
-                this.spawnEntity(new BasicEnemyGuy(this.enemySpriteSheet.textures["guy_1.png"], this.effectSpriteSheet, Math.floor(Math.random() * app.view.width), 0));
-            }
-            this.lastEnemySpawn = this.lastUpdate;
+
+        // enemy spawn routine
+        let enemySpawnChance = Math.random();
+        if (this.lastUpdate - this.lastNormalEnemySpawn > 30 && enemySpawnChance > 0.65) {
+            this.spawnEntity(new BasicEnemy(this, Math.floor(Math.random() * (app.view.width - this.player.width)), 0));
+            this.lastNormalEnemySpawn = this.lastUpdate;
         }
+        if (this.lastUpdate - this.lastCarSpawn > 200 && enemySpawnChance > 0.8) {
+            this.spawnEntity(new Car(this, app.view.width, (Math.random() * (app.view.height - 60) + 30)))
+            this.lastCarSpawn = this.lastUpdate;
+        }
+
+        // update player iframes
+        if (this.invincibleFramesLeft > 0) {
+            if (this.invincibleFramesLeft - delta <= 0) {
+                this.invincibleFramesLeft = 0;
+                removeEffect("playerInvincibilityFlash");
+            } else {
+                this.invincibleFramesLeft -= delta;
+            }
+        }
+
+        this.lastFrameInputs = PRESSED_KEYS;
         this.lastUpdate += delta;
     }
     cleanup(app: Application): void {
@@ -170,21 +236,9 @@ class Game implements Scene {
     }
     onKeyDown(event: KeyboardEvent): void {
         if (event.repeat || this.isPlayerDead) return;
-        if (event.code === "ArrowUp" && !PRESSED_KEYS["ArrowRight"] && !PRESSED_KEYS["ArrowLeft"]) {
-            this.player.gotoAndStop(1);
-        }
-        if (event.code === "ArrowRight") {
-            this.player.scale.x = -Math.abs(this.player.scale.x);
-            this.player.anchor.x = 1;
-            this.player.gotoAndPlay(2);
-        }
-        if (event.code === "ArrowLeft") {
-            this.player.scale.x = Math.abs(this.player.scale.x);
-            this.player.anchor.x = 0;
-            this.player.gotoAndPlay(2);
-        }
         if (event.code === "KeyZ") {
-            this.spawnEntity(new Bullet(this, this.playerSpriteSheet.textures["bullet.png"], this.player.x + this.player.width / 2, this.player.y))
+            this.spawnEntity(new Bullet(this, this.player.x + this.player.width / 2, this.player.y))
+            this.lastZPress = this.lastUpdate;
         }
     }
     onKeyUp(event: KeyboardEvent): void {
@@ -204,6 +258,15 @@ class Game implements Scene {
     despawnEntityByIndex(index: number) {
         this.entities[index].cleanup(app, this.container);
         this.entities.splice(index, 1);
+    }
+    getPlayerSpritesheet(): Spritesheet {
+        return this.playerSpriteSheet;
+    }
+    getEnemySpriteSheet(): Spritesheet {
+        return this.enemySpriteSheet;
+    }
+    getEffectSpriteSheet(): Spritesheet {
+        return this.effectSpriteSheet;
     }
 }
 

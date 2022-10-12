@@ -8,17 +8,19 @@ class QuickFlash implements Effect {
     private maxTime = 0;
     private lastUpdate = 0;
     private lastCycle = 0;
+    private speed = 4;
 
-    constructor(object: DisplayObject, maxTime?: number, onEnd?: Function) {
+    constructor(object: DisplayObject, onEnd?: Function, maxTime?: number, speed?: number) {
         this.isActive = true;
         this.object = object;
-        this.maxTime = maxTime;
+        this.maxTime = maxTime != null ? maxTime : 0;
         this.onEnd = onEnd;
+        this.speed = speed != null ? speed : 4;
     }
 
     update(delta: number) {
         if (!this.isActive) return;
-        if (this.lastUpdate - this.lastCycle > 2) {
+        if (this.lastUpdate - this.lastCycle > this.speed) {
             this.lastCycle = this.lastUpdate;
             this.object.renderable = !this.object.renderable;
         }

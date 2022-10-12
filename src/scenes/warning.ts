@@ -35,7 +35,7 @@ class Warning implements Scene {
         app.stage.addChild(this.container);
 
         Assets.loadBundle("intro").then(() => {
-            continueText.text = "Press Enter to Continue"
+            continueText.text = "Press Z to Continue"
             continueText.x = app.view.width / 2 - continueText.width / 2;
             this.isLoadingComplete = true;
         });
@@ -45,12 +45,20 @@ class Warning implements Scene {
     }
 
     onKeyDown(event: KeyboardEvent): void {
-        if (event.key === "Enter" && this.isLoadingComplete) {
+        if (event.code === "KeyZ" && this.isLoadingComplete) {
             removeEffect("warning-continueTextFade");
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
                 setCurrentScene(new Intro(false));
             }));
         }
+        /*
+        if (event.code === "KeyG" && this.isLoadingComplete) {
+            removeEffect("warning-continueTextFade");
+            registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
+                setCurrentScene(new Game());
+            }));
+        }
+        */
     }
 
     cleanup(app: PIXI.Application): void {

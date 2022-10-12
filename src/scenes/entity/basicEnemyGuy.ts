@@ -1,25 +1,29 @@
 import { AnimatedSprite, Application, Container, Sprite, Spritesheet, Texture } from "pixi.js";
 import { app, registerEffect } from "../..";
 import QuickFlash from "../../effects/quickFlash";
-import Bullet from "./bullet";
-import Entity from "./entity";
+import Game from "../game";
+import BulletEnemy from "./bulletEnemy";
+import Enemy from "./enemy";
 
-class BasicEnemyGuy implements Entity {
-    private container: Container;
-    private texture: Texture;
-    private effectSpriteSheet: Spritesheet;
-    private initialX: number;
-    private initialY: number;
+class BasicEnemy extends Enemy {
+    protected game: Game;
+    protected container: Container;
+    protected texture: Texture;
+    protected effectSpriteSheet: Spritesheet;
+    protected initialX: number;
+    protected initialY: number;
     public sprite: Sprite;
-    private animatedSprite: AnimatedSprite;
-    private isActive = true;
-    private isDead = false;
-    private lastUpdate = 0;
-    private lastCycle = 0;
+    protected animatedSprite: AnimatedSprite;
+    protected isActive = true;
+    protected isDead = false;
+    protected lastUpdate = 0;
+    protected lastCycle = 0;
 
-    constructor(guyTexture: Texture, effectSpriteSheet: Spritesheet, x: number, y: number) {
-        this.texture = guyTexture;
-        this.effectSpriteSheet = effectSpriteSheet;
+    constructor(game: Game, x: number, y: number) {
+        super()
+        this.game = game;
+        this.texture = game.getEnemySpriteSheet().textures["guy_1.png"];
+        this.effectSpriteSheet = game.getEffectSpriteSheet();
         this.initialX = x;
         this.initialY = y;
     }   
@@ -52,12 +56,8 @@ class BasicEnemyGuy implements Entity {
             this.isActive = false;
         }
     }
-
-    setDead(): void {
-        this.isDead = true;
-    }
     
-    signalHit(): void {
+    hit(): boolean {
         this.isDead = true;
         this.sprite.visible = false;
         this.animatedSprite = new AnimatedSprite(this.effectSpriteSheet.animations["explosion"]);
@@ -68,6 +68,10 @@ class BasicEnemyGuy implements Entity {
         this.animatedSprite.animationSpeed = 0.2;
         this.animatedSprite.loop = false;
 
+        if (Math.random() > 0.8) {
+            this.game.spawnEntity(new BulletEnemy(this.game, this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, true))
+        }
+
         this.animatedSprite.onComplete = () => {
             this.container.removeChild(this.animatedSprite);
             this.sprite.anchor.x = 0;
@@ -75,26 +79,19 @@ class BasicEnemyGuy implements Entity {
             this.sprite.texture = this.effectSpriteSheet.textures["corpseflash.png"]
             this.sprite.x = this.sprite.x - this.sprite.width / 2;
             this.sprite.visible = true;
-            registerEffect("quickFlash" + this.sprite.x * this.sprite.y, new QuickFlash(this.sprite, 20, () => {
+            registerEffect("enemyCorpseFlash", new QuickFlash(this.sprite, () => {
                 this.isActive = false;
-            }))
+            }, 28));
         }
 
         this.container.addChild(this.animatedSprite);
         this.animatedSprite.play();
+        return true;
     }
 
     cleanup(app: Application, gameContainer: Container): void {
         gameContainer.removeChild(this.sprite);
     }
-
-    getIsActive(): boolean {
-        return this.isActive;
-    }
-
-    getIsDead(): boolean {
-        return this.isDead;
-    }
 }
 
-export default BasicEnemyGuy;
+export default BasicEnemy;

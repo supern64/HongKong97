@@ -1,6 +1,6 @@
 import { Application, Container, Sprite, Spritesheet, Texture } from "pixi.js";
 import Game from "../game";
-import BasicEnemyGuy from "./basicEnemyGuy";
+import BasicEnemy from "./basicEnemyGuy";
 import Entity from "./entity";
 
 class Bullet implements Entity {
@@ -11,9 +11,9 @@ class Bullet implements Entity {
     private sprite: Sprite;
     private isActive = true;
 
-    constructor(game: Game, texture: Texture, x: number, y: number) {
+    constructor(game: Game, x: number, y: number) {
         this.game = game;
-        this.texture = texture;
+        this.texture = game.getPlayerSpritesheet().textures["bullet.png"];
         this.initialX = x;
         this.initialY = y;
     }   
@@ -35,11 +35,13 @@ class Bullet implements Entity {
         }
         
         // bullet collision
-        for (let enemy of this.game.entities.filter(r => r instanceof BasicEnemyGuy)) {
-            if (this.sprite.getBounds().intersects((enemy as BasicEnemyGuy).sprite.getBounds()) && !(enemy as BasicEnemyGuy).getIsDead()) {
-                (enemy as BasicEnemyGuy).signalHit();
+        for (let enemy of this.game.entities.filter(r => r instanceof BasicEnemy)) {
+            if (this.sprite.getBounds().intersects((enemy as BasicEnemy).sprite.getBounds()) && !(enemy as BasicEnemy).getIsDead()) {
                 this.isActive = false;
-                this.game.score += 6;
+                if ((enemy as BasicEnemy).hit()) {
+                    this.game.enemiesDefeated += 1;
+                    this.game.score += 6;
+                }
             }
         }
         

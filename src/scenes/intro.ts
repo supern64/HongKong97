@@ -22,7 +22,7 @@ class Intro implements Scene {
 
     init(app: Application): void {
         Assets.loadBundle("screens").then((assets) => {
-            Audio.playInBuffer();
+            if (!this.isGameOver) Audio.playInBuffer();
             this.spritesheet = new Spritesheet(assets.screens, ScreensSheetData);
             this.spritesheet.parse().then(() => {
                 if (this.isGameOver) {

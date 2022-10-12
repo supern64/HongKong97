@@ -1,16 +1,16 @@
 import * as PIXI from 'pixi.js';
+import * as Audio from '../audio';
 import { Assets } from '@pixi/assets';
 import { registerEffect, removeEffect, setCurrentScene, TEXT_STYLE } from '..';
 import FadeContinuous from '../effects/fadeContinuous';
 import FadeOut from '../effects/fadeOut';
 import Scene from './scene';
 import Intro from './intro';
-import Song from '../assets/loop.ogg';
+
 
 class Warning implements Scene {
     private container: PIXI.Container;
     private isLoadingComplete: boolean = false;
-    private music: HTMLAudioElement;
     
     init(app: PIXI.Application) {
         this.container = new PIXI.Container();
@@ -35,14 +35,11 @@ class Warning implements Scene {
         registerEffect("warning-continueTextFade", new FadeContinuous(continueText));
         app.stage.addChild(this.container);
 
-        Assets.loadBundle(["screens", "game"]).then(() => {
-            this.music = new Audio(Song);
-            this.music.loop = true;
-            this.music.oncanplaythrough = () => {
-                continueText.text = "Press Z to Continue"
-                continueText.x = app.view.width / 2 - continueText.width / 2;
-                this.isLoadingComplete = true;
-            }
+        Assets.loadBundle(["screens", "game"]).then(async () => {
+            await Audio.load();
+            continueText.text = "Press Z to Continue"
+            continueText.x = app.view.width / 2 - continueText.width / 2;
+            this.isLoadingComplete = true;
         });
     }
 
@@ -54,7 +51,6 @@ class Warning implements Scene {
             removeEffect("warning-continueTextFade");
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
                 setCurrentScene(new Intro(false));  
-                this.music.play();
             }));
         }
         /*

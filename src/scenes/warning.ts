@@ -5,11 +5,12 @@ import FadeContinuous from '../effects/fadeContinuous';
 import FadeOut from '../effects/fadeOut';
 import Scene from './scene';
 import Intro from './intro';
-import Game from './game';
+import Song from '../assets/loop.ogg';
 
 class Warning implements Scene {
     private container: PIXI.Container;
     private isLoadingComplete: boolean = false;
+    private music: HTMLAudioElement;
     
     init(app: PIXI.Application) {
         this.container = new PIXI.Container();
@@ -34,10 +35,14 @@ class Warning implements Scene {
         registerEffect("warning-continueTextFade", new FadeContinuous(continueText));
         app.stage.addChild(this.container);
 
-        Assets.loadBundle("intro").then(() => {
-            continueText.text = "Press Z to Continue"
-            continueText.x = app.view.width / 2 - continueText.width / 2;
-            this.isLoadingComplete = true;
+        Assets.loadBundle(["screens", "game"]).then(() => {
+            this.music = new Audio(Song);
+            this.music.loop = true;
+            this.music.oncanplaythrough = () => {
+                continueText.text = "Press Z to Continue"
+                continueText.x = app.view.width / 2 - continueText.width / 2;
+                this.isLoadingComplete = true;
+            }
         });
     }
 
@@ -48,7 +53,8 @@ class Warning implements Scene {
         if (event.code === "KeyZ" && this.isLoadingComplete) {
             removeEffect("warning-continueTextFade");
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
-                setCurrentScene(new Intro(false));
+                setCurrentScene(new Intro(false));  
+                this.music.play();
             }));
         }
         /*

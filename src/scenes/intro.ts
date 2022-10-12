@@ -1,7 +1,6 @@
 import { Application, Spritesheet, Sprite, Texture } from "pixi.js";
 import { Assets } from "@pixi/assets";
 import Scene from "./scene";
-import Song from '../assets/loop.ogg';
 import * as ScreensSheetData from '../assets/screens.json';
 import { registerEffect, setCurrentScene } from "..";
 import FadeIn from "../effects/fadeIn";
@@ -21,15 +20,8 @@ class Intro implements Scene {
     }
 
     init(app: Application): void {
-        if (!this.isGameOver) {
-            const music = new Audio(Song);
-            music.loop = true;
-            music.play();
-        }
-        
         Assets.loadBundle("screens").then((assets) => {
             this.spritesheet = new Spritesheet(assets.screens, ScreensSheetData);
-            Assets.backgroundLoadBundle("game");
             this.spritesheet.parse().then(() => {
                 if (this.isGameOver) {
                     this.currentImage = 9;

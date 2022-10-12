@@ -1,5 +1,5 @@
 import { Assets } from "@pixi/assets";
-import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite } from "pixi.js";
+import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite, utils } from "pixi.js";
 import { app, PRESSED_KEYS, registerEffect, removeEffect, setCurrentScene } from "..";
 import * as BackgroundSheetData from "../assets/bg.json";
 import * as PlayerSheetData from "../assets/player.json";
@@ -47,6 +47,7 @@ class Game implements Scene {
         this.container.sortableChildren = true;
 
         Assets.loadBundle("game").then((assets) => {
+            utils.clearTextureCache();
             this.container.alpha = 0;
             // draw bg
             const bgNum = Math.floor((Math.random() * 6) - 0.01) + 1;

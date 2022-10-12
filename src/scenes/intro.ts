@@ -1,4 +1,4 @@
-import { Application, Spritesheet, Sprite, Texture } from "pixi.js";
+import { Application, Spritesheet, Sprite, utils } from "pixi.js";
 import { Assets } from "@pixi/assets";
 import Scene from "./scene";
 import * as Audio from "../audio";
@@ -21,6 +21,7 @@ class Intro implements Scene {
     }
 
     init(app: Application): void {
+        utils.clearTextureCache(); // pixi only uses this for from, fromFrame and fromImage methods
         Assets.loadBundle("screens").then((assets) => {
             if (!this.isGameOver) Audio.playInBuffer();
             this.spritesheet = new Spritesheet(assets.screens, ScreensSheetData);

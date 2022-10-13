@@ -15,6 +15,7 @@ const registeredEffects: Array<{ name: string; effect: Effect }> = [];
 let currentStage: Scene | null;
 app.view.id = "canvas";
 app.stage.sortableChildren = true;
+app.ticker.maxFPS = 60;
 document.body.appendChild(app.view);
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;

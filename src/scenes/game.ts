@@ -228,6 +228,8 @@ class Game implements Scene {
                             this.isPlayerDead = true;
                             (enemy as Enemy).setDead();
                             this.player.gotoAndStop(0);
+                            removeEffect("playerInvincibilityFlash");
+                            this.player.renderable = true;
                             registerEffect("game-fadeout", new FadeOut(this.container, 1, () => {
                                 setCurrentScene(new Intro(true));
                             }))

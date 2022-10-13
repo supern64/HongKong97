@@ -1,18 +1,21 @@
-import { Application, Spritesheet, Sprite, utils } from "pixi.js";
+import { Application, Spritesheet, Sprite, utils, Container } from "pixi.js";
 import { Assets } from "@pixi/assets";
 import Scene from "./scene";
-import * as Audio from "../audio";
+import { app, registerEffect, setCurrentScene } from "..";
 import * as ScreensSheetData from '../assets/screens.json';
-import { registerEffect, setCurrentScene } from "..";
+import * as TextSheetData from '../assets/text.json';
 import FadeIn from "../effects/fadeIn";
 import FadeOut from "../effects/fadeOut";
 import Game from "./game";
-import { EvalSourceMapDevToolPlugin } from "webpack";
+import * as SelectLang from "./selectLang";
 
 class Intro implements Scene {
+    private container: Container;
     private currentImage: number;
-    private sprite: Sprite;
+    private pictureSprite: Sprite;
+    private textSprite: Sprite;
     private spritesheet: Spritesheet;
+    private textSpritesheet: Spritesheet;
     private isGameOver = false;
     private hasIntroLooped = true;
     private transitionComplete = false;
@@ -24,32 +27,61 @@ class Intro implements Scene {
     }
 
     init(app: Application): void {
+        this.container = new Container();
         utils.clearTextureCache(); // pixi only uses this for from, fromFrame and fromImage methods
-        Assets.loadBundle("screens").then((assets) => {
-            if (!this.isGameOver) Audio.playInBuffer();
-            this.spritesheet = new Spritesheet(assets.screens, ScreensSheetData);
-            this.spritesheet.parse().then(() => {
-                if (this.isGameOver) {
-                    this.currentImage = 9;
-                } else {
-                    this.currentImage = 1;
-                }
-            
-                this.sprite = new Sprite();
-                this.sprite.alpha = 0;
-                this.sprite.width = app.screen.width;
-                this.sprite.height = app.screen.height;
+        this.spritesheet = SelectLang.screensSpritesheet;
+        this.textSpritesheet = SelectLang.textSpritesheet;
+        
+        if (this.isGameOver) {
+            this.currentImage = 9;
+        } else {
+            this.currentImage = 1;
+        }
     
-                app.stage.addChild(this.sprite);
+        this.pictureSprite = new Sprite();
+        this.textSprite = new Sprite();
+        
+        this.textSprite.visible = false;
+        this.container.alpha = 0;
+
+        this.container.addChild(this.pictureSprite, this.textSprite);
+        app.stage.addChild(this.container);
+        
+        // fix skip to game to default to english
+        if (!this.spritesheet?.textures || !this.textSpritesheet?.textures) {
+            Assets.loadBundle(["screens", "en"]).then(async (assets) => {
+                console.log(assets);
+                this.spritesheet = new Spritesheet(assets.screens.screens, ScreensSheetData);
+                await this.spritesheet.parse();
+                this.textSpritesheet = new Spritesheet(assets.en.en, TextSheetData);
+                await this.textSpritesheet.parse();
                 this.runScreen();
             });
-        });
+        } else { this.runScreen();  }
     }
 
     runScreen() {
-        this.sprite.texture = this.spritesheet.textures[this.currentImage.toString()];
+        if (this.currentImage > 4 && this.currentImage < 9) {
+            this.textSprite.visible = true;
+            this.pictureSprite.texture = this.spritesheet.textures[this.currentImage.toString() + ".png"];
+            this.textSprite.texture = this.textSpritesheet.textures[this.currentImage.toString() + ".png"];
+            this.textSprite.width = app.screen.width;
+            this.textSprite.scale.y = 3;
+            this.textSprite.y = app.view.height - this.textSprite.height;
+            this.pictureSprite.height = this.textSprite.y - 1;
+        } else {
+            this.textSprite.visible = false;
+            this.pictureSprite.width = app.screen.width;
+            this.pictureSprite.height = app.screen.height;
+            if (this.currentImage < 4) {
+                this.pictureSprite.texture = this.textSpritesheet.textures[this.currentImage.toString() + ".png"];
+            } else {
+                this.pictureSprite.texture = this.spritesheet.textures[this.currentImage.toString() + ".png"];
+            }
+        }
+        
         this.transitionComplete = false;
-        registerEffect("intro-fadeIns", new FadeIn(this.sprite, 1, () => {
+        registerEffect("intro-fadeIns", new FadeIn(this.container, 1, () => {
             this.transitionComplete = true;
             this.currentTimeout = setTimeout(() => {
                 this.fadeNextScreen();
@@ -59,7 +91,7 @@ class Intro implements Scene {
 
     fadeNextScreen() {
         this.transitionComplete = false;
-        registerEffect("intro-fadeOuts", new FadeOut(this.sprite, 1, () => {
+        registerEffect("intro-fadeOuts", new FadeOut(this.container, 1, () => {
             this.currentImage += 1;
             if (this.currentImage == 5) this.hasIntroLooped = true;
             if (this.currentImage > 8 && this.hasIntroLooped) {
@@ -78,7 +110,7 @@ class Intro implements Scene {
     }
 
     cleanup(app: Application): void {
-        app.stage.removeChild(this.sprite);
+        app.stage.removeChild(this.container);
     }
 
     onKeyDown(event: KeyboardEvent): void {

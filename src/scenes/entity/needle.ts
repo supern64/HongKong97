@@ -21,8 +21,8 @@ class Needle implements Entity {
         this.sprite = new AnimatedSprite(this.enemySpriteSheet.animations.needle);
         this.sprite.x = this.initialX;
         this.sprite.y = this.initialY;
-        this.sprite.scale.x = 2.3;
-        this.sprite.scale.y = 2.3;
+        this.sprite.scale.x = 2.5;
+        this.sprite.scale.y = 2.5;
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
         this.sprite.animationSpeed = 0.3;

@@ -18,7 +18,6 @@ import QuickFlash from "../effects/quickFlash";
 import Enemy from "./entity/enemy";
 import WaveEnemy from "./entity/waveEnemyGuy";
 import MoreWaveEnemy from "./entity/moreWaveEnemyGuy";
-import BulletEnemy from "./entity/bulletEnemy";
 
 
 class Game implements Scene {
@@ -61,7 +60,7 @@ class Game implements Scene {
             const bgSpritesheet = new Spritesheet(assets.backgrounds, BackgroundSheetData);
 
             bgSpritesheet.parse().then(() => {
-                const bgSprite = new Sprite(bgSpritesheet.textures[bgNum.toString()]);
+                const bgSprite = new Sprite(bgSpritesheet.textures[bgNum.toString() + ".png"]);
                 bgSprite.width = app.view.width;
                 bgSprite.height = app.view.height;
 
@@ -87,8 +86,8 @@ class Game implements Scene {
 
                 this.player.y = app.view.height - 140;
                 this.player.x = app.view.width / 2 - this.player.width / 2;
-                this.player.scale.x = 2.3;
-                this.player.scale.y = 2.3;
+                this.player.scale.x = 2.5;
+                this.player.scale.y = 2.5;
 
                 if (process.env.NODE_ENV === "development") {
                     this.boundingBoxDisplay = new Graphics();

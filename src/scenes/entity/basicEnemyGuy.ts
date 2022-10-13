@@ -33,8 +33,8 @@ class BasicEnemy extends Enemy {
         this.sprite = new Sprite(this.texture);
         this.sprite.x = this.initialX;
         this.sprite.y = this.initialY;
-        this.sprite.scale.x = 2.3;
-        this.sprite.scale.y = 2.3;
+        this.sprite.scale.x = 2.5;
+        this.sprite.scale.y = 2.5;
         
         gameContainer.addChild(this.sprite);
     }
@@ -63,8 +63,8 @@ class BasicEnemy extends Enemy {
         this.animatedSprite = new AnimatedSprite(this.effectSpriteSheet.animations["explosion"]);
         this.animatedSprite.x = this.sprite.x - this.animatedSprite.width / 2;
         this.animatedSprite.y = this.sprite.y;
-        this.animatedSprite.scale.x = 2.5;
-        this.animatedSprite.scale.y = 2.5;
+        this.animatedSprite.scale.x = 3.2;
+        this.animatedSprite.scale.y = 3.2;
         this.animatedSprite.animationSpeed = 0.2;
         this.animatedSprite.loop = false;
 

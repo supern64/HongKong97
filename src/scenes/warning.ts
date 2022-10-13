@@ -5,8 +5,8 @@ import { enterDebugMode, isDebugMode, registerEffect, removeEffect, setCurrentSc
 import FadeContinuous from '../effects/fadeContinuous';
 import FadeOut from '../effects/fadeOut';
 import Scene from './scene';
-import Intro from './intro';
 import Game from './game';
+import SelectLanguage from './selectLang';
 
 
 class Warning implements Scene {
@@ -55,7 +55,7 @@ class Warning implements Scene {
             removeEffect("warning-continueTextFade");
             this.hasPressed = true;
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
-                setCurrentScene(new Intro(false));  
+                setCurrentScene(new SelectLanguage());  
             }));
         } else if (event.code === "KeyG" && this.isLoadingComplete && isDebugMode) {
             removeEffect("warning-continueTextFade");

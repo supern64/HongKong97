@@ -44,14 +44,14 @@ class WaveEnemy extends BasicEnemy {
         this.animatedSprite = new AnimatedSprite(this.effectSpriteSheet.animations["explosion"]);
         this.animatedSprite.x = this.sprite.x - this.animatedSprite.width / 2;
         this.animatedSprite.y = this.sprite.y;
-        this.animatedSprite.scale.x = 2.5;
-        this.animatedSprite.scale.y = 2.5;
+        this.animatedSprite.scale.x = 2.75;
+        this.animatedSprite.scale.y = 2.75;
         this.animatedSprite.animationSpeed = 0.2;
         this.animatedSprite.loop = false;
 
         const spawnChance = Math.random();
         if (spawnChance > 0.8) {
-            if (spawnChance > 0.9) {
+            if (spawnChance > 0.925) {
                 this.game.spawnEntity(new Needle(this.game, this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2))
             } else {
                 this.game.spawnEntity(new BulletEnemy(this.game, this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, true))

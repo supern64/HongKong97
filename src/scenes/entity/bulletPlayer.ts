@@ -22,8 +22,8 @@ class Bullet implements Entity {
         this.sprite = new Sprite(this.texture);
         this.sprite.x = this.initialX;
         this.sprite.y = this.initialY;
-        this.sprite.scale.x = 2.3;
-        this.sprite.scale.y = 2.3;
+        this.sprite.scale.x = 2.5;
+        this.sprite.scale.y = 2.5;
         
         gameContainer.addChild(this.sprite);
     }

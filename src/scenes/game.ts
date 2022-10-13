@@ -86,7 +86,7 @@ class Game implements Scene {
                 this.player.scale.x = 2.5;
                 this.player.scale.y = 2.5;
 
-                if (process.env.NODE_ENV === "development") {
+                if (isDebugMode) {
                     this.boundingBoxDisplay = new Graphics();
                     let bb = this.player.getBounds();
                     this.boundingBoxDisplay.zIndex = 3;

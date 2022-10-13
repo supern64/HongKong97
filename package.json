@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@pixi/assets": "^6.5.5",
+    "@pixi/filter-color-overlay": "^4.2.0",
     "fontfaceobserver": "^2.3.0",
     "pixi.js": "^6.5.5"
   }

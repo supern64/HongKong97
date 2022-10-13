@@ -2,11 +2,10 @@ import { Application, Container, DisplayObject, Sprite } from "pixi.js";
 import Entity from "./entity";
 
 abstract class Enemy implements Entity {
-    protected gameContainer: Container;
     protected isDead = false;
     protected isActive = true;
 
-    abstract sprite: Sprite;
+    abstract sprite: Sprite; // required for calculating hitboxes
 
     abstract init(app: Application, gameContainer: Container<DisplayObject>, assets?: any): void;
 

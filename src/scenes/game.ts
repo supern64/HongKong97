@@ -18,7 +18,9 @@ import QuickFlash from "../effects/quickFlash";
 import Enemy from "./entity/enemy";
 import WaveEnemy from "./entity/waveEnemyGuy";
 import MoreWaveEnemy from "./entity/moreWaveEnemyGuy";
+import Boss from "./entity/boss";
 
+let currentBackground = 0;
 
 class Game implements Scene {
     private container: Container;
@@ -27,10 +29,10 @@ class Game implements Scene {
     public enemiesDefeated = 0;
     private invincibleFramesLeft = 0;
     private isPlayerDead = false;
-    private isBossActive = false;
 
     private scoreText: BitmapText;
     private player: AnimatedSprite;
+    private background: Sprite;
     private boundingBoxDisplay: Graphics;
     private playerSpriteSheet: Spritesheet;
     private enemySpriteSheet: Spritesheet;
@@ -42,6 +44,7 @@ class Game implements Scene {
     private lastNormalEnemySpawn = 0;
     private lastWaveyEnemySpawn = 0;
     private lastMoreWaveyEnemySpawn = 0;
+    private lastBossHitWithInvincibility = 0;
     private lastCarSpawn = 0;
     private lastFrameInputs: { [key: string]: boolean } = {};
 
@@ -56,21 +59,15 @@ class Game implements Scene {
             utils.clearTextureCache();
             this.container.alpha = 0;
             // draw bg
-            const bgNum = Math.floor((Math.random() * 6) - 0.01) + 1;
+            const bgNum = (currentBackground % 6) + 1;
             const bgSpritesheet = new Spritesheet(assets.backgrounds, BackgroundSheetData);
 
             bgSpritesheet.parse().then(() => {
-                const bgSprite = new Sprite(bgSpritesheet.textures[bgNum.toString() + ".png"]);
-                bgSprite.width = app.view.width;
-                bgSprite.height = app.view.height;
-
-                /*const colorMatrix = new filters.ColorMatrixFilter();
-                bgSprite.filters = [colorMatrix];
-                colorMatrix.brightness(3, true)
-                colorMatrix.tint(0xFF2222);*/
-                
-                bgSprite.zIndex = -1;
-                this.container.addChild(bgSprite);
+                this.background = new Sprite(bgSpritesheet.textures[bgNum.toString() + ".png"]);
+                this.background.width = app.view.width;
+                this.background.height = app.view.height;
+                this.background.zIndex = -1;
+                this.container.addChild(this.background);
             });
 
             const playerSpritesheet = new Spritesheet(assets.player, PlayerSheetData);
@@ -221,15 +218,26 @@ class Game implements Scene {
                 if (this.player.getBounds().intersects((enemy as Enemy).sprite.getBounds())) {
                     if (!(enemy as Enemy).getIsDead()) {
                         if (this.invincibleFramesLeft > 0) {
-                            (enemy as Enemy).hit();
-                            this.score += 12;
-                            this.enemiesDefeated += 1;
+                            if (enemy instanceof Boss) {
+                                if (this.lastUpdate - this.lastBossHitWithInvincibility > 12) {
+                                    if ((enemy as Enemy).hit()) {
+                                        this.score += 20;
+                                    }
+                                    this.lastBossHitWithInvincibility = this.lastUpdate;
+                                }
+                            } else {
+                                if ((enemy as Enemy).hit()) {
+                                    this.score += 12;
+                                    this.enemiesDefeated += 1;
+                                }
+                            }
                         } else {
                             this.isPlayerDead = true;
                             (enemy as Enemy).setDead();
                             this.player.gotoAndStop(0);
                             removeEffect("playerInvincibilityFlash");
                             this.player.renderable = true;
+                            currentBackground += 1;
                             registerEffect("game-fadeout", new FadeOut(this.container, 1, () => {
                                 setCurrentScene(new Intro(true));
                             }))
@@ -240,7 +248,7 @@ class Game implements Scene {
         }
 
         // enemy spawn routine
-        if (!this.isBossActive) {
+        if (!this.entities.some(r => r instanceof Boss)) {
             let enemySpawnChance = Math.random();
             if (this.lastUpdate - this.lastNormalEnemySpawn > 30 && enemySpawnChance > 0.65) {
                 this.spawnEntity(new BasicEnemy(this, Math.floor(Math.random() * (app.view.width - this.player.width)), 0));
@@ -261,7 +269,8 @@ class Game implements Scene {
         }
 
         if (this.enemiesDefeated >= 30) {
-            // TODO: boss and boss spawn routine
+            this.enemiesDefeated = 0;
+            this.spawnEntity(new Boss(this, Math.floor(Math.random() * (app.view.width - 200)) + 100, 50));
         }
 
         // update player iframes
@@ -292,6 +301,9 @@ class Game implements Scene {
             }
             this.invincibleFramesLeft += 100000;
         }
+        if (event.code === "KeyB" && !this.entities.some(r => r instanceof Boss) && isDebugMode) {
+            this.spawnEntity(new Boss(this, Math.floor(Math.random() * (app.view.width - 200)) + 100, 50));
+        }
     }
     onKeyUp(event: KeyboardEvent): void {
         if (event.repeat) return;
@@ -313,6 +325,12 @@ class Game implements Scene {
     }
     getPlayerSprite(): AnimatedSprite {
         return this.player;
+    }
+    getBackgroundSprite(): Sprite {
+        return this.background;
+    }
+    getGameContainer(): Container {
+        return this.container;
     }
     getPlayerSpritesheet(): Spritesheet {
         return this.playerSpriteSheet;

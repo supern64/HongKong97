@@ -1,5 +1,6 @@
 import { Application, Container, Sprite, Texture } from "pixi.js";
 import Game from "../game";
+import Boss from "./boss";
 import Enemy from "./enemy";
 import Entity from "./entity";
 
@@ -39,8 +40,8 @@ class Bullet implements Entity {
             if (this.sprite.getBounds().intersects((enemy as Enemy).sprite.getBounds()) && !(enemy as Enemy).getIsDead()) {
                 this.isActive = false;
                 if ((enemy as Enemy).hit()) {
-                    this.game.enemiesDefeated += 1;
-                    this.game.score += 6;
+                    this.game.enemiesDefeated += (enemy instanceof Boss) ? 0 : 1;
+                    this.game.score += (enemy instanceof Boss) ? 20 : 6;
                 }
             }
         }

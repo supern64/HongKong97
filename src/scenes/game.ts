@@ -124,7 +124,7 @@ class Game implements Scene {
         // update score ui
         if (this.scoreText) this.scoreText.text = this.score.toString().padStart(9, '0');
 
-        if (this.boundingBoxDisplay && process.env.NODE_ENV === "development") {
+        if (this.boundingBoxDisplay && isDebugMode) {
             this.boundingBoxDisplay.renderable = PRESSED_KEYS["ShiftLeft"] ? true : false
             if (PRESSED_KEYS["ShiftLeft"]) {
                 let bb = this.player.getBounds();

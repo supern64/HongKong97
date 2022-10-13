@@ -29,7 +29,7 @@ class MoreWaveEnemy extends WaveEnemy {
             }
         }
 
-        if (this.lastUpdate - this.lastBullet > 10 && Math.random() > (this.willTargetPlayer ? 0.6 : 0.75) && this.willSpawnBullet) {
+        if (this.lastUpdate - this.lastBullet > 10 && Math.random() > (this.willTargetPlayer ? 0.75 : 0.6) && this.willSpawnBullet) {
             let willSpawn = true;
             this.lastBullet = this.lastUpdate;
             let momentumX, momentumY;

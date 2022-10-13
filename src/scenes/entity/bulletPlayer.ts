@@ -1,6 +1,6 @@
-import { Application, Container, Sprite, Spritesheet, Texture } from "pixi.js";
+import { Application, Container, Sprite, Texture } from "pixi.js";
 import Game from "../game";
-import BasicEnemy from "./basicEnemyGuy";
+import Enemy from "./enemy";
 import Entity from "./entity";
 
 class Bullet implements Entity {
@@ -35,10 +35,10 @@ class Bullet implements Entity {
         }
         
         // bullet collision
-        for (let enemy of this.game.entities.filter(r => r instanceof BasicEnemy)) {
-            if (this.sprite.getBounds().intersects((enemy as BasicEnemy).sprite.getBounds()) && !(enemy as BasicEnemy).getIsDead()) {
+        for (let enemy of this.game.entities.filter(r => r instanceof Enemy)) {
+            if (this.sprite.getBounds().intersects((enemy as Enemy).sprite.getBounds()) && !(enemy as Enemy).getIsDead()) {
                 this.isActive = false;
-                if ((enemy as BasicEnemy).hit()) {
+                if ((enemy as Enemy).hit()) {
                     this.game.enemiesDefeated += 1;
                     this.game.score += 6;
                 }

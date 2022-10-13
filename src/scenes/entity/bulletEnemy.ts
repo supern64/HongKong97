@@ -1,53 +1,54 @@
-import { AnimatedSprite, Application, Container, DisplayObject, Sprite, Spritesheet, Texture } from "pixi.js";
-import { app, registerEffect } from "../..";
-import QuickFlash from "../../effects/quickFlash";
+import { AnimatedSprite, Application, Container, DisplayObject, Sprite, Spritesheet } from "pixi.js";
+import { app } from "../..";
 import Game from "../game";
-import BasicEnemy from "./basicEnemyGuy";
 import Enemy from "./enemy";
-import Entity from "./entity";
 
 class BulletEnemy extends Enemy {
     public sprite: AnimatedSprite | Sprite;
     private spritesheet: Spritesheet;
     private initialX: number;
     private initialY: number;
-    private isEnder: boolean;
+    private momentumX: number = 0;
+    private momentumY: number = 0;
+    private isLandmine: boolean;
 
-    constructor(game: Game, x: number, y: number, isEnder: boolean) {
-        if (isEnder === false) throw new Error("non-ender bullets not implemented");
+    constructor(game: Game, x: number, y: number, isLandmine: boolean, momentumX?: number, momentumY?: number) {
         super();
         this.spritesheet = game.getEnemySpriteSheet();
         this.initialX = x;
         this.initialY = y;
-        this.isEnder = isEnder;
+        this.isLandmine = isLandmine;
+        // option ignored w/ landmines
+        this.momentumX = momentumX ? momentumX : 0;
+        this.momentumY = momentumY ? momentumY : 0;
     }
 
     init(app: Application, gameContainer: Container<DisplayObject>): void {
-        if (this.isEnder) {
+        if (this.isLandmine) {
             // enemy spritesheet
             const animatedSprite = new AnimatedSprite(this.spritesheet.animations["ptr"]);
             this.sprite = animatedSprite;
-            animatedSprite.x = this.initialX;
-            animatedSprite.y = this.initialY
-            animatedSprite.scale.x = 2.3;
-            animatedSprite.scale.y = 2.3;
+            
             animatedSprite.animationSpeed = 0.2;
             animatedSprite.play();
+            this.momentumX = 0;
+            this.momentumY = 2;
         } else {
-            // i have no idea where the enemy bullet sprite is... recreation time?
-            //this.sprite = new Sprite(this.spritesheet.textures["bullet.png"])
+            this.sprite = new Sprite(this.spritesheet.textures["bullet.png"])
         }
+        this.sprite.x = this.initialX;
+        this.sprite.y = this.initialY;
+        this.sprite.scale.x = 2.3;
+        this.sprite.scale.y = 2.3;
+
         gameContainer.addChild(this.sprite);
 
     }
     update(delta: number): void {
-        if (this.isEnder) {
-            this.sprite.y += 2 * delta;
-            if (this.sprite.y > app.view.height) {
-                this.isActive = false;
-            }
-        } else {
-            // not implemented yet
+        this.sprite.x += this.momentumX * delta;
+        this.sprite.y += this.momentumY * delta;
+        if (this.sprite.x > app.view.width || this.sprite.x < 0 || this.sprite.y > app.view.height || this.sprite.y < 0) {
+            this.isActive = false;
         }
     }
     cleanup(app: Application, gameContainer: Container<DisplayObject>): void {

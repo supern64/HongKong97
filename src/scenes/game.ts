@@ -16,6 +16,9 @@ import Intro from "./intro";
 import Needle from "./entity/needle";
 import QuickFlash from "../effects/quickFlash";
 import Enemy from "./entity/enemy";
+import WaveEnemy from "./entity/waveEnemyGuy";
+import MoreWaveEnemy from "./entity/moreWaveEnemyGuy";
+import BulletEnemy from "./entity/bulletEnemy";
 
 
 class Game implements Scene {
@@ -25,6 +28,7 @@ class Game implements Scene {
     public enemiesDefeated = 0;
     private invincibleFramesLeft = 0;
     private isPlayerDead = false;
+    private isBossActive = false;
 
     private scoreText: BitmapText;
     private player: AnimatedSprite;
@@ -37,6 +41,8 @@ class Game implements Scene {
     private lastZPress = 0;
     private lastAutoShoot = 0;
     private lastNormalEnemySpawn = 0;
+    private lastWaveyEnemySpawn = 0;
+    private lastMoreWaveyEnemySpawn = 0;
     private lastCarSpawn = 0;
     private lastFrameInputs: { [key: string]: boolean } = {};
 
@@ -136,31 +142,31 @@ class Game implements Scene {
 
         // inputs
         if (PRESSED_KEYS["ArrowRight"]) {
-            if (this.player.x + 7 * delta + this.player.width > app.view.width) {
+            if (this.player.x + 6 * delta + this.player.width > app.view.width) {
                 this.player.x = app.view.width - this.player.width;
             } else {
-                this.player.x += 7 * delta;
+                this.player.x += 6 * delta;
             }
         }
         if (PRESSED_KEYS["ArrowLeft"]) {
-            if (this.player.x - 7 * delta < 0) {
+            if (this.player.x - 6 * delta < 0) {
                 this.player.x = 0;
             } else {
-                this.player.x -= 7 * delta;
+                this.player.x -= 6 * delta;
             }
         }
         if (PRESSED_KEYS["ArrowUp"]) {
-            if (this.player.y - 7 * delta < 0) {
+            if (this.player.y - 6 * delta < 0) {
                 this.player.y = 0;
             } else {
-                this.player.y -= 7 * delta;
+                this.player.y -= 6 * delta;
             }
         }
         if (PRESSED_KEYS["ArrowDown"]) {
-            if (this.player.y + 7 * delta + this.player.height > app.view.height) {
+            if (this.player.y + 6 * delta + this.player.height > app.view.height) {
                 this.player.y = app.view.height - this.player.height;
             } else {
-                this.player.y += 7 * delta;
+                this.player.y += 6 * delta;
             }
         }
         if (PRESSED_KEYS["KeyZ"] && this.lastFrameInputs?.["KeyZ"] && (this.lastUpdate - this.lastZPress > 8 && this.lastUpdate - this.lastAutoShoot > 8)) {
@@ -202,9 +208,11 @@ class Game implements Scene {
         if (needles.length > 0) {
             for (let needle of needles) {
                 if (this.player.getBounds().intersects((needle as Needle).sprite.getBounds()) && !(needle as Needle).getHasBeenUsed()) {
-                    this.invincibleFramesLeft = 500;
                     (needle as Needle).use();
-                    registerEffect("playerInvincibilityFlash", new QuickFlash(this.player))
+                    if (this.invincibleFramesLeft === 0) {
+                        registerEffect("playerInvincibilityFlash", new QuickFlash(this.player))
+                    }
+                    this.invincibleFramesLeft += 500;
                 }
             }
         }
@@ -231,14 +239,28 @@ class Game implements Scene {
         }
 
         // enemy spawn routine
-        let enemySpawnChance = Math.random();
-        if (this.lastUpdate - this.lastNormalEnemySpawn > 30 && enemySpawnChance > 0.65) {
-            this.spawnEntity(new BasicEnemy(this, Math.floor(Math.random() * (app.view.width - this.player.width)), 0));
-            this.lastNormalEnemySpawn = this.lastUpdate;
+        if (!this.isBossActive) {
+            let enemySpawnChance = Math.random();
+            if (this.lastUpdate - this.lastNormalEnemySpawn > 30 && enemySpawnChance > 0.65) {
+                this.spawnEntity(new BasicEnemy(this, Math.floor(Math.random() * (app.view.width - this.player.width)), 0));
+                this.lastNormalEnemySpawn = this.lastUpdate;
+            }
+            if (this.lastUpdate - this.lastWaveyEnemySpawn > 45 && enemySpawnChance > 0.7) {
+                this.spawnEntity(new WaveEnemy(this, Math.floor(Math.random() * (app.view.width - 200) + 200), 0));
+                this.lastWaveyEnemySpawn = this.lastUpdate;
+            }
+            if (this.lastUpdate - this.lastMoreWaveyEnemySpawn > 70 && enemySpawnChance > 0.7) {
+                this.spawnEntity(new MoreWaveEnemy(this, Math.floor(Math.random() * (app.view.width - 300) + 300), 0));
+                this.lastMoreWaveyEnemySpawn = this.lastUpdate;
+            }
+            if (this.lastUpdate - this.lastCarSpawn > 250 && enemySpawnChance > 0.8) {
+                this.spawnEntity(new Car(this, app.view.width, (Math.random() * (app.view.height - 60) + 30)))
+                this.lastCarSpawn = this.lastUpdate;
+            }
         }
-        if (this.lastUpdate - this.lastCarSpawn > 200 && enemySpawnChance > 0.8) {
-            this.spawnEntity(new Car(this, app.view.width, (Math.random() * (app.view.height - 60) + 30)))
-            this.lastCarSpawn = this.lastUpdate;
+
+        if (this.enemiesDefeated >= 30) {
+            // TODO: boss and boss spawn routine
         }
 
         // update player iframes
@@ -250,8 +272,6 @@ class Game implements Scene {
                 this.invincibleFramesLeft -= delta;
             }
         }
-
-        
         
         this.lastFrameInputs = PRESSED_KEYS;
         this.lastUpdate += delta;
@@ -283,6 +303,9 @@ class Game implements Scene {
     despawnEntityByIndex(index: number) {
         this.entities[index].cleanup(app, this.container);
         this.entities.splice(index, 1);
+    }
+    getPlayerSprite(): AnimatedSprite {
+        return this.player;
     }
     getPlayerSpritesheet(): Spritesheet {
         return this.playerSpriteSheet;

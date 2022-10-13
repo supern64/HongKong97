@@ -1,5 +1,6 @@
 import { AnimatedSprite, Application, Container, Spritesheet } from "pixi.js";
 import { app } from "../..";
+import Game from "../game";
 import Entity from "./entity";
 
 class Needle implements Entity {
@@ -10,8 +11,8 @@ class Needle implements Entity {
     private isActive = true;
     private hasBeenUsed = false;
 
-    constructor(enemySpriteSheet: Spritesheet, x: number, y: number) {
-        this.enemySpriteSheet = enemySpriteSheet;
+    constructor(game: Game, x: number, y: number) {
+        this.enemySpriteSheet = game.getEnemySpriteSheet();
         this.initialX = x;
         this.initialY = y;
     }   

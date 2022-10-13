@@ -7,6 +7,7 @@ import { registerEffect, setCurrentScene } from "..";
 import FadeIn from "../effects/fadeIn";
 import FadeOut from "../effects/fadeOut";
 import Game from "./game";
+import { EvalSourceMapDevToolPlugin } from "webpack";
 
 class Intro implements Scene {
     private currentImage: number;
@@ -14,6 +15,8 @@ class Intro implements Scene {
     private spritesheet: Spritesheet;
     private isGameOver = false;
     private hasIntroLooped = true;
+    private transitionComplete = false;
+    private currentTimeout: NodeJS.Timeout;
 
     constructor(isGameOver: boolean) {
         this.isGameOver = isGameOver;
@@ -38,29 +41,36 @@ class Intro implements Scene {
                 this.sprite.height = app.screen.height;
     
                 app.stage.addChild(this.sprite);
-                this.nextScreen();
+                this.runScreen();
             });
         });
     }
 
-    nextScreen() {
+    runScreen() {
         this.sprite.texture = this.spritesheet.textures[this.currentImage.toString()];
+        this.transitionComplete = false;
         registerEffect("intro-fadeIns", new FadeIn(this.sprite, 1, () => {
-            setTimeout(() => {
-                registerEffect("intro-fadeOuts", new FadeOut(this.sprite, 1, () => {
-                    this.currentImage += 1;
-                    if (this.currentImage == 5) this.hasIntroLooped = true;
-                    if (this.currentImage > 8 && this.hasIntroLooped) {
-                        // continue to game
-                        setCurrentScene(new Game());
-                    } else {
-                        if (this.currentImage > 11) {
-                            this.currentImage = 4;
-                        }
-                        this.nextScreen();
-                    }
-                }));
+            this.transitionComplete = true;
+            this.currentTimeout = setTimeout(() => {
+                this.fadeNextScreen();
             }, (this.isGameOver ? 3000 : 5000));
+        }));
+    }
+
+    fadeNextScreen() {
+        this.transitionComplete = false;
+        registerEffect("intro-fadeOuts", new FadeOut(this.sprite, 1, () => {
+            this.currentImage += 1;
+            if (this.currentImage == 5) this.hasIntroLooped = true;
+            if (this.currentImage > 8 && this.hasIntroLooped) {
+                // continue to game
+                setCurrentScene(new Game());
+            } else {
+                if (this.currentImage > 11) {
+                    this.currentImage = 4;
+                }
+                this.runScreen();
+            }
         }));
     }
 
@@ -69,6 +79,13 @@ class Intro implements Scene {
 
     cleanup(app: Application): void {
         app.stage.removeChild(this.sprite);
+    }
+
+    onKeyDown(event: KeyboardEvent): void {
+        if (event.code === "KeyZ" && this.transitionComplete) {
+            clearTimeout(this.currentTimeout);
+            this.fadeNextScreen();
+        }
     }
 }
 

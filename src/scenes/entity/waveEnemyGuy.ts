@@ -1,48 +1,25 @@
-import { AnimatedSprite, Application, Container, Sprite, Spritesheet, Texture } from "pixi.js";
+import { AnimatedSprite } from "pixi.js";
 import { app, registerEffect } from "../..";
 import QuickFlash from "../../effects/quickFlash";
 import Game from "../game";
+import BasicEnemy from "./basicEnemyGuy";
 import BulletEnemy from "./bulletEnemy";
-import Enemy from "./enemy";
+import Needle from "./needle";
 
-class BasicEnemy extends Enemy {
-    protected game: Game;
-    protected container: Container;
-    protected texture: Texture;
-    protected effectSpriteSheet: Spritesheet;
-    protected initialX: number;
-    protected initialY: number;
-    public sprite: Sprite;
-    protected animatedSprite: AnimatedSprite;
-    protected isActive = true;
-    protected isDead = false;
-    protected lastUpdate = 0;
-    protected lastCycle = 0;
+class WaveEnemy extends BasicEnemy {
+    private lastMovement: number;
+    protected lastSineUpdate: number = 0;
 
     constructor(game: Game, x: number, y: number) {
-        super()
-        this.game = game;
-        this.texture = game.getEnemySpriteSheet().textures["guy_1.png"];
-        this.effectSpriteSheet = game.getEffectSpriteSheet();
-        this.initialX = x;
-        this.initialY = y;
+        super(game, x, y)
+        this.texture = game.getEnemySpriteSheet().textures["guy_2.png"];
     }   
 
-    init(app: Application, gameContainer: Container) {
-        this.container = gameContainer;
-        this.sprite = new Sprite(this.texture);
-        this.sprite.x = this.initialX;
-        this.sprite.y = this.initialY;
-        this.sprite.scale.x = 2.3;
-        this.sprite.scale.y = 2.3;
-        
-        gameContainer.addChild(this.sprite);
-    }
-
-    update(delta: number): void {
+    update(delta: number) {
         if (this.isDead) return;
-        if (this.lastUpdate - this.lastCycle > 10) {
-            this.lastCycle = this.lastUpdate;
+        const movement = Math.cos(this.lastSineUpdate) * 7.5;
+
+        if (this.lastMovement * movement < 0) {
             this.sprite.scale.x = -this.sprite.scale.x;
             if (this.sprite.anchor.x === 0) {
                 this.sprite.anchor.x = 1;
@@ -50,13 +27,17 @@ class BasicEnemy extends Enemy {
                 this.sprite.anchor.x = 0;
             }
         }
+
         this.lastUpdate += delta;
-        this.sprite.y += 3 * delta;
+        this.lastSineUpdate += delta / 10;
+        this.sprite.x += movement;
+        this.sprite.y += 5 * delta;
+        this.lastMovement = movement;
         if (this.sprite.y > app.view.height) {
             this.isActive = false;
         }
     }
-    
+
     hit(): boolean {
         this.isDead = true;
         this.sprite.visible = false;
@@ -68,8 +49,13 @@ class BasicEnemy extends Enemy {
         this.animatedSprite.animationSpeed = 0.2;
         this.animatedSprite.loop = false;
 
-        if (Math.random() > 0.8) {
-            this.game.spawnEntity(new BulletEnemy(this.game, this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, true))
+        const spawnChance = Math.random();
+        if (spawnChance > 0.8) {
+            if (spawnChance > 0.9) {
+                this.game.spawnEntity(new Needle(this.game, this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2))
+            } else {
+                this.game.spawnEntity(new BulletEnemy(this.game, this.sprite.x + this.sprite.width / 2, this.sprite.y + this.sprite.height / 2, true))
+            }  
         }
 
         this.animatedSprite.onComplete = () => {
@@ -88,10 +74,6 @@ class BasicEnemy extends Enemy {
         this.animatedSprite.play();
         return true;
     }
-
-    cleanup(app: Application, gameContainer: Container): void {
-        gameContainer.removeChild(this.sprite);
-    }
 }
 
-export default BasicEnemy;
+export default WaveEnemy;

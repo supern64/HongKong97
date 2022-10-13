@@ -1,4 +1,3 @@
-import { ColorOverlayFilter } from "@pixi/filter-color-overlay";
 import { AnimatedSprite, Application, Container, DisplayObject, Spritesheet } from "pixi.js";
 import { app, registerEffect } from "../..";
 import FadeToColor from "../../effects/fadeToColor";

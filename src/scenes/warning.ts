@@ -21,7 +21,8 @@ class Warning implements Scene {
         const warningBody = new PIXI.Text("This is a recreation of the game \"Hong Kong 97\".\n" + 
         "The original game (and this game in turn) contains disturbing imagery, and may cause triggers.\n" +
         "If you are disturbed by gore and dead bodies, you probably don't want to play this.\n" +
-        "If you dare though, I can't really stop you. Don't blame me.", TEXT_STYLE);
+        "Also, this game is a work of fiction and I do not endorse any acts represented here.\n" +
+        "If you dare play this, I can't really stop you. Don't blame me.", TEXT_STYLE);
         const continueText = new PIXI.Text("Loading...", TEXT_STYLE);
         
         warningTitle.x = 50;
@@ -29,7 +30,7 @@ class Warning implements Scene {
         warningBody.x = 50;
         warningBody.y = 110;
         continueText.x = app.view.width / 2 - continueText.width / 2;
-        continueText.y = 450;
+        continueText.y = 500;
 
         this.container.addChild(warningTitle);
         this.container.addChild(warningBody);

@@ -61,6 +61,14 @@ object-assign
  */
 
 /*!
+ * @pixi/filter-color-overlay - v4.2.0
+ * Compiled Fri, 05 Aug 2022 19:53:35 UTC
+ *
+ * @pixi/filter-color-overlay is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+
+/*!
  * @pixi/filter-displacement - v6.5.5
  * Compiled Fri, 30 Sep 2022 13:37:53 UTC
  *

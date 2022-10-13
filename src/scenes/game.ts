@@ -1,6 +1,6 @@
 import { Assets } from "@pixi/assets";
 import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite, utils, Graphics } from "pixi.js";
-import { app, PRESSED_KEYS, registerEffect, removeEffect, setCurrentScene } from "..";
+import { app, isDebugMode, PRESSED_KEYS, registerEffect, removeEffect, setCurrentScene } from "..";
 import * as BackgroundSheetData from "../assets/bg.json";
 import * as PlayerSheetData from "../assets/player.json";
 import * as EnemySheetData from "../assets/eneitems.json";
@@ -284,6 +284,12 @@ class Game implements Scene {
         if (event.code === "KeyZ") {
             this.spawnEntity(new Bullet(this, this.player.x + this.player.width / 2, this.player.y))
             this.lastZPress = this.lastUpdate;
+        }
+        if (event.code === "KeyI" && isDebugMode) {
+            if (this.invincibleFramesLeft === 0) {
+                registerEffect("playerInvincibilityFlash", new QuickFlash(this.player))
+            }
+            this.invincibleFramesLeft += 100000;
         }
     }
     onKeyUp(event: KeyboardEvent): void {

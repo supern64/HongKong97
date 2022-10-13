@@ -10,8 +10,8 @@ class MoreWaveEnemy extends WaveEnemy {
 
     constructor(game: Game, x: number, y: number) {
         super(game, x, y)
-        this.willSpawnBullet = Math.random() > 0.5;
-        this.willTargetPlayer = Math.random() > 0.5;
+        this.willSpawnBullet = Math.random() > 0.55;
+        this.willTargetPlayer = Math.random() > 0.6;
         this.texture = game.getEnemySpriteSheet().textures["guy_3.png"];
     }   
 
@@ -38,7 +38,7 @@ class MoreWaveEnemy extends WaveEnemy {
                 let deltaX = playerSprite.x - this.sprite.x;
                 let deltaY = playerSprite.y - this.sprite.y;
 
-                if (deltaY < -30) {
+                if (deltaY < -20) {
                     willSpawn = false;
                 } else {
                     // magnitude of vector

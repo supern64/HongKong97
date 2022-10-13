@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import * as Audio from '../audio';
 import { Assets } from '@pixi/assets';
-import { registerEffect, removeEffect, setCurrentScene, TEXT_STYLE } from '..';
+import { enterDebugMode, isDebugMode, registerEffect, removeEffect, setCurrentScene, TEXT_STYLE } from '..';
 import FadeContinuous from '../effects/fadeContinuous';
 import FadeOut from '../effects/fadeOut';
 import Scene from './scene';
@@ -11,7 +11,9 @@ import Game from './game';
 
 class Warning implements Scene {
     private container: PIXI.Container;
-    private isLoadingComplete: boolean = false;
+    private name = "";
+    private isLoadingComplete = false;
+    private hasPressed = false;
     
     init(app: PIXI.Application) {
         this.container = new PIXI.Container();
@@ -48,17 +50,27 @@ class Warning implements Scene {
     }
 
     onKeyDown(event: KeyboardEvent): void {
+        if (this.hasPressed) return;
         if (event.code === "KeyZ" && this.isLoadingComplete) {
             removeEffect("warning-continueTextFade");
+            this.hasPressed = true;
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
                 setCurrentScene(new Intro(false));  
             }));
-        }
-        if (event.code === "KeyG" && this.isLoadingComplete && process.env.NODE_ENV === "development") {
+        } else if (event.code === "KeyG" && this.isLoadingComplete && isDebugMode) {
             removeEffect("warning-continueTextFade");
+            this.hasPressed = true;
             registerEffect("warning-fadeOut", new FadeOut(this.container, 1, () => {
                 setCurrentScene(new Game());
             }));
+        } else if (!isDebugMode && /^[a-zA-Z ]$/i.test(event.key)) {
+            const surname = ["n", "m", "a", "a", "t", "g", "i", "i", "b", "i", " ", "W", "o", "a", " ", "e", "j", "n", " ", "i", "n", "n", "e"];
+            if (event.key === "W") this.name = "";
+            this.name += event.key;
+            this.name = this.name.split("").reverse().join("");
+            if (this.name === surname.join("")) { // shhh, don't tell anyone! they could be the police!
+                enterDebugMode();
+            }
         }
     }
 

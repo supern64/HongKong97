@@ -10,9 +10,11 @@ import ScoreFontData from './assets/score.xml';
 import ScoreLocation from './assets/score.png';
 
 export const app = new PIXI.Application();
+export let isDebugMode = process.env.NODE_ENV === "development";
 const registeredEffects: Array<{ name: string; effect: Effect }> = [];
 let currentStage: Scene | null;
 app.view.id = "canvas";
+app.stage.sortableChildren = true;
 document.body.appendChild(app.view);
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -52,6 +54,14 @@ export function registerEffect(name: string, effect: Effect) {
 export function removeEffect(name: String) {
   registeredEffects.splice(registeredEffects.findIndex((n) => n.name == name), 1)
 }
+export function enterDebugMode() {
+  isDebugMode = true;
+  const debugText = new PIXI.Text("Debug Mode", TEXT_STYLE);
+  debugText.x = app.view.width - debugText.width - 5;
+  debugText.y = app.view.height - debugText.height + 16;
+  debugText.zIndex = 5;
+  app.stage.addChild(debugText);
+}
 
 // init
 const font = new FontFaceObserver("DotGothic16");
@@ -62,6 +72,9 @@ font.load().then(() => {
     const data = (new DOMParser()).parseFromString(ScoreFontData, "application/xml");
     PIXI.BitmapFont.install(data, scoreFontTexture);
     setCurrentScene(new Warning());
+    if (process.env.NODE_ENV === "development") {
+      enterDebugMode();
+    }
   });
 });
 

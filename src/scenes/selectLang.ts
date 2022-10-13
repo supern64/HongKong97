@@ -18,6 +18,7 @@ class SelectLanguage implements Scene {
     private selectPointer: AnimatedSprite;
     private currentIndex = 0;
     private hasChosen = false;
+    private fadeInComplete = false;
     private readonly POSSIBLE_OPTIONS = ["jp", "zh", "en"];
 
     init(app: Application): void {
@@ -45,7 +46,7 @@ class SelectLanguage implements Scene {
 
             this.selectPointer.play();
             this.container.addChild(selectBackground, this.selectPointer);
-            registerEffect("selectLang-fadeIn", new FadeIn(this.container));
+            registerEffect("selectLang-fadeIn", new FadeIn(this.container, 1, () => this.fadeInComplete = true));
         })
         app.stage.addChild(this.container);
     }
@@ -64,7 +65,7 @@ class SelectLanguage implements Scene {
                 this.currentIndex -= 1;
                 if (this.currentIndex < 0) this.currentIndex = this.POSSIBLE_OPTIONS.length - 1;
             } 
-            if (event.code === "KeyZ") {
+            if (event.code === "KeyZ" && this.fadeInComplete) {
                 this.hasChosen = true;
                 const language = this.POSSIBLE_OPTIONS[this.currentIndex];
                 registerEffect("selectLang-fadeOut", new FadeOut(this.container, 1, () => {

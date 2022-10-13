@@ -61,6 +61,7 @@ class Intro implements Scene {
     }
 
     runScreen() {
+        this.transitionComplete = false;
         if (this.currentImage > 4 && this.currentImage < 9) {
             this.textSprite.visible = true;
             this.pictureSprite.texture = this.spritesheet.textures[this.currentImage.toString() + ".png"];
@@ -80,7 +81,6 @@ class Intro implements Scene {
             }
         }
         
-        this.transitionComplete = false;
         registerEffect("intro-fadeIns", new FadeIn(this.container, 1, () => {
             this.transitionComplete = true;
             this.currentTimeout = setTimeout(() => {

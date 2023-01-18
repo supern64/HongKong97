@@ -1,5 +1,4 @@
-import { Application, Spritesheet, Sprite, utils, Container } from "pixi.js";
-import { Assets } from "@pixi/assets";
+import { Assets, Application, Spritesheet, Sprite, utils, Container } from "pixi.js";
 import Scene from "./scene";
 import { app, registerEffect, setCurrentScene } from "..";
 import * as ScreensSheetData from '../assets/screens.json';
@@ -50,7 +49,6 @@ class Intro implements Scene {
         // fix skip to game to default to english
         if (!this.spritesheet?.textures || !this.textSpritesheet?.textures) {
             Assets.loadBundle(["screens", "en"]).then(async (assets) => {
-                console.log(assets);
                 this.spritesheet = new Spritesheet(assets.screens.screens, ScreensSheetData);
                 await this.spritesheet.parse();
                 this.textSpritesheet = new Spritesheet(assets.en.en, TextSheetData);

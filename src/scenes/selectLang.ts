@@ -1,5 +1,4 @@
-import { Assets } from "@pixi/assets";
-import { AnimatedSprite, Application, Container, Sprite, Spritesheet, utils } from "pixi.js";
+import { Assets, AnimatedSprite, Application, Container, Sprite, Spritesheet, utils } from "pixi.js";
 import * as Audio from "../audio";
 import * as ScreensSheetData from '../assets/screens.json';
 import * as EnemySheetData from '../assets/eneitems.json';

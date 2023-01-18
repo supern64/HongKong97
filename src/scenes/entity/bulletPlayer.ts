@@ -40,7 +40,11 @@ class Bullet implements Entity {
             if (this.sprite.getBounds().intersects((enemy as Enemy).sprite.getBounds()) && !(enemy as Enemy).getIsDead()) {
                 this.isActive = false;
                 if ((enemy as Enemy).hit()) {
-                    this.game.enemiesDefeated += (enemy instanceof Boss) ? 0 : 1;
+                    if (enemy instanceof Boss) {
+                        this.game.enemiesDefeated = 0;
+                    } else {
+                        this.game.enemiesDefeated += 1;
+                    }
                     this.game.score += (enemy instanceof Boss) ? 20 : 6;
                 }
             }

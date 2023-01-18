@@ -1,5 +1,4 @@
-import { Assets } from "@pixi/assets";
-import { Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite, utils, Graphics } from "pixi.js";
+import { Assets, Application, BitmapText, Container, Sprite, Spritesheet, filters, AnimatedSprite, utils, Graphics } from "pixi.js";
 import { app, isDebugMode, PRESSED_KEYS, registerEffect, removeEffect, setCurrentScene } from "..";
 import * as BackgroundSheetData from "../assets/bg.json";
 import * as PlayerSheetData from "../assets/player.json";
@@ -85,6 +84,7 @@ class Game implements Scene {
                 this.player.x = app.view.width / 2 - this.player.width / 2;
                 this.player.scale.x = 2.5;
                 this.player.scale.y = 2.5;
+                this.player.zIndex = 2;
 
                 if (isDebugMode) {
                     this.boundingBoxDisplay = new Graphics();
@@ -222,6 +222,7 @@ class Game implements Scene {
                                 if (this.lastUpdate - this.lastBossHitWithInvincibility > 12) {
                                     if ((enemy as Enemy).hit()) {
                                         this.score += 20;
+                                        this.enemiesDefeated = 0;
                                     }
                                     this.lastBossHitWithInvincibility = this.lastUpdate;
                                 }

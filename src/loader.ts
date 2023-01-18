@@ -1,4 +1,4 @@
-import { Assets } from '@pixi/assets';
+import { Assets } from 'pixi.js';
 import Screens from './assets/screens.png';
 import EnglishText from './assets/text_en.png';
 import JapaneseText from './assets/text_jp.png';

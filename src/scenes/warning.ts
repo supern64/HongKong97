@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 import * as Audio from '../audio';
-import { Assets } from '@pixi/assets';
 import { enterDebugMode, isDebugMode, registerEffect, removeEffect, setCurrentScene, TEXT_STYLE } from '..';
 import FadeContinuous from '../effects/fadeContinuous';
 import FadeOut from '../effects/fadeOut';
@@ -39,7 +38,7 @@ class Warning implements Scene {
         registerEffect("warning-continueTextFade", new FadeContinuous(continueText));
         app.stage.addChild(this.container);
 
-        Assets.loadBundle(["screens", "game"]).then(async () => {
+        PIXI.Assets.loadBundle(["screens", "game"]).then(async () => {
             await Audio.load();
             continueText.text = "Press Z to Continue"
             continueText.x = app.view.width / 2 - continueText.width / 2;

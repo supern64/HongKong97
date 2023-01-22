@@ -50,9 +50,6 @@ class SelectLanguage implements Scene {
         app.stage.addChild(this.container);
     }
 
-    updateAndDraw(app: Application, delta: number): void {
-    }
-
     onKeyDown(event: KeyboardEvent): void {
         if (event.repeat) return;
         if (!this.hasChosen) {

@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Application, Assets, BitmapFont, BaseTexture, Text, TextStyle, SCALE_MODES } from 'pixi.js';
 import * as FontFaceObserver from 'fontfaceobserver';
 import './style.css';
 import Scene from './scenes/scene';
@@ -9,7 +9,7 @@ import ScoreFontData from './assets/score.xml';
 import ScoreLocation from './assets/score.png';
 
 
-export const app = new PIXI.Application();
+export const app = new Application();
 export let isDebugMode = process.env.NODE_ENV === "development";
 const registeredEffects: Array<{ name: string; effect: Effect }> = [];
 let currentStage: Scene | null;
@@ -18,8 +18,8 @@ app.stage.sortableChildren = true;
 app.ticker.maxFPS = 60;
 document.body.appendChild(app.view as HTMLCanvasElement);
 
-PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
-export const TEXT_STYLE = new PIXI.TextStyle({fontFamily: "DotGothic16", fill: "#ffffff", wordWrap: true, wordWrapWidth: app.view.width - 100, lineHeight: 40, padding: 4});
+BaseTexture.defaultOptions.scaleMode = SCALE_MODES.NEAREST;
+export const TEXT_STYLE = new TextStyle({fontFamily: "DotGothic16", fill: "#ffffff", wordWrap: true, wordWrapWidth: app.view.width - 100, lineHeight: 40, padding: 4});
 
 // boilerplate update and input logic, runs at 60fps
 export const PRESSED_KEYS: { [key: string]: boolean } = {};
@@ -33,7 +33,7 @@ window.addEventListener("keyup", (ev) => {
 });
 
 app.ticker.add((delta) => {
-  currentStage?.updateAndDraw(app, delta);
+  if (currentStage?.updateAndDraw) currentStage.updateAndDraw(app, delta);
   for (let i = 0; i < registeredEffects.length; i++) {
     if (!registeredEffects[i].effect.getIsActive()) { // remove inactive effects
       registeredEffects.splice(i, 1);
@@ -57,7 +57,7 @@ export function removeEffect(name: String) {
 }
 export function enterDebugMode() {
   isDebugMode = true;
-  const debugText = new PIXI.Text("Debug Mode", TEXT_STYLE);
+  const debugText = new Text("Debug Mode", TEXT_STYLE);
   debugText.x = app.view.width - debugText.width - 5;
   debugText.y = app.view.height - debugText.height;
   debugText.zIndex = 5;
@@ -68,10 +68,10 @@ export function enterDebugMode() {
 const font = new FontFaceObserver("DotGothic16");
 registerBundles();
 font.load().then(() => {
-  PIXI.Assets.add("score", ScoreLocation);
-  PIXI.Assets.load("score").then((scoreFontTexture) => {
+  Assets.add("score", ScoreLocation);
+  Assets.load("score").then((scoreFontTexture) => {
     const data = (new DOMParser()).parseFromString(ScoreFontData, "application/xml");
-    PIXI.BitmapFont.install(data, scoreFontTexture);
+    BitmapFont.install(data, scoreFontTexture);
     setCurrentScene(new Warning());
     if (process.env.NODE_ENV === "development") {
       enterDebugMode();

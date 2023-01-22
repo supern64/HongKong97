@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Application, Assets, Container, Text } from 'pixi.js';
 import * as Audio from '../audio';
 import { enterDebugMode, isDebugMode, registerEffect, removeEffect, setCurrentScene, TEXT_STYLE } from '..';
 import FadeContinuous from '../effects/fadeContinuous';
@@ -9,20 +9,20 @@ import SelectLanguage from './selectLang';
 
 
 class Warning implements Scene {
-    private container: PIXI.Container;
+    private container: Container;
     private name = "";
     private isLoadingComplete = false;
     private hasPressed = false;
     
-    init(app: PIXI.Application) {
-        this.container = new PIXI.Container();
-        const warningTitle = new PIXI.Text('HEY!', {fontSize: 40, fontFamily: "DotGothic16", fill: "#ff0000", padding: 4});
-        const warningBody = new PIXI.Text("This is a recreation of the game \"Hong Kong 97\".\n" + 
+    init(app: Application) {
+        this.container = new Container();
+        const warningTitle = new Text('HEY!', {fontSize: 40, fontFamily: "DotGothic16", fill: "#ff0000", padding: 4});
+        const warningBody = new Text("This is a recreation of the game \"Hong Kong 97\".\n" + 
         "The original game (and this game in turn) contains disturbing imagery, and may cause triggers.\n" +
         "If you are disturbed by gore and dead bodies, you probably don't want to play this.\n" +
         "Also, this game is a work of fiction and I do not endorse any acts represented here.\n" +
         "If you dare play this, I can't really stop you. Don't blame me.", TEXT_STYLE);
-        const continueText = new PIXI.Text("Loading...", TEXT_STYLE);
+        const continueText = new Text("Loading...", TEXT_STYLE);
         
         warningTitle.x = 50;
         warningTitle.y = 50;
@@ -38,15 +38,12 @@ class Warning implements Scene {
         registerEffect("warning-continueTextFade", new FadeContinuous(continueText));
         app.stage.addChild(this.container);
 
-        PIXI.Assets.loadBundle(["screens", "game"]).then(async () => {
+        Assets.loadBundle(["screens", "game"]).then(async () => {
             await Audio.load();
             continueText.text = "Press Z to Continue"
             continueText.x = app.view.width / 2 - continueText.width / 2;
             this.isLoadingComplete = true;
         });
-    }
-
-    updateAndDraw(app: PIXI.Application, delta: number): void {
     }
 
     onKeyDown(event: KeyboardEvent): void {
@@ -74,7 +71,7 @@ class Warning implements Scene {
         }
     }
 
-    cleanup(app: PIXI.Application): void {
+    cleanup(app: Application): void {
         app.stage.removeChild(this.container);
     }
 }

@@ -104,9 +104,6 @@ class Intro implements Scene {
         }));
     }
 
-    updateAndDraw(app: Application, delta: number): void {
-    }
-
     cleanup(app: Application): void {
         app.stage.removeChild(this.container);
     }

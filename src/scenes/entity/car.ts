@@ -1,4 +1,3 @@
-import { Texture } from "pixi.js";
 import Game from "../game";
 import BasicEnemy from "./basicEnemyGuy";
 
